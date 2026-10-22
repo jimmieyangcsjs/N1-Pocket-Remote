@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1012">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>N1 Remote</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><img src="/icon.png" alt=""></div>
+      <div>
+        <strong>N1 Remote</strong>
+        <span id="deviceLine">局域网控制台</span>
+      </div>
+    </div>
+    <div id="connectionBadge" class="badge">未连接</div>
+  </header>
+
+  <main>
+    <section id="loginView" class="login card">
+      <div class="status-line"><span class="signal"></span> 局域网直连</div>
+      <h1>连接客厅的 N1</h1>
+      <p>输入电视上显示的 6 位 PIN，手机以后会记住这台设备。</p>
+      <label for="pin">访问 PIN</label>
+      <input id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+      <button id="loginButton" class="primary wide">连接</button>
+      <p class="fineprint">N1 需已启动并与手机连接到同一局域网。</p>
+    </section>
+
+    <div id="appView" class="hidden">
+      <nav class="tabs" aria-label="功能">
+        <button class="tab active" data-tab="remote">遥控</button>
+        <button class="tab" data-tab="touch">触控</button>
+        <button class="tab" data-tab="apps">应用</button>
+        <button class="tab" data-tab="text">输入</button>
+        <button class="tab" data-tab="install">安装</button>
+        <button class="tab" data-tab="more">更多</button>
+      </nav>
+
+      <section class="panel active" id="tab-remote">
+        <div class="remote-layout">
+          <div class="dpad-wrap">
+            <div class="dpad">
+              <button class="pad up" data-key="19" aria-label="上">▲</button>
+              <button class="pad left" data-key="21" aria-label="左">◀</button>
+              <button class="pad ok" data-key="23">OK</button>
+              <button class="pad right" data-key="22" aria-label="右">▶</button>
+              <button class="pad down" data-key="20" aria-label="下">▼</button>
+            </div>
+          </div>
+          <div class="remote-actions">
+            <button data-key="4">返回</button>
+            <button data-key="3">主页</button>
+            <button data-key="82">菜单</button>
+            <button data-key="24">音量 +</button>
+            <button data-key="25">音量 −</button>
+            <button data-key="164">静音</button>
+          </div>
+        </div>
+        <div class="section-title">
+          <h2>电视画面</h2>
+          <button class="quiet" id="shotButton">刷新截图</button>
+        </div>
+        <div class="screen-shell">
+          <img id="screenshot" alt="N1 截图">
+          <div id="screenPlaceholder">点击“刷新截图”查看当前画面</div>
+        </div>
+      </section>
+
+      <section class="panel touch-page" id="tab-touch">
+        <div class="touch-page-head">
+          <div>
+            <h2>触控板</h2>
+            <p>在下方移动电视上的指针，轻触点击，按住约 0.6 秒长按。</p>
+          </div>
+          <button class="quiet" id="touchBackToRemote">返回遥控</button>
+        </div>
+
+        <div class="touch-meta">
+          <span id="touchMapping">正在读取屏幕尺寸…</span>
+          <span id="touchPointerState">指针待命</span>
+        </div>
+
+        <div class="sensitivity" role="group" aria-label="指针速度">
+          <button data-sensitivity="0.62">精准</button>
+          <button class="active" data-sensitivity="1">标准</button>
+          <button data-sensitivity="1.5">快速</button>
+        </div>
+
+        <div id="touchpad" class="touchpad touchpad-large" role="application" aria-label="N1 鼠标触控板">
+          <div class="touch-axis"></div>
+          <div id="touchDot" class="touch-dot"></div>
+          <div class="touch-caption">滑动移动 · 轻触点击 · 按住长按</div>
+        </div>
+
+        <div class="touch-command-grid">
+          <button class="touch-command primary" data-touch-action="click">
+            <strong>点击</strong><span>轻触 · 长按</span>
+          </button>
+          <button class="touch-command" data-touch-key="4">
+            <strong>返回</strong><span>轻触 · 长按</span>
+          </button>
+          <button class="touch-command" data-touch-key="82">
+            <strong>菜单</strong><span>轻触 · 长按</span>
+          </button>
+        </div>
+        <div class="touch-native-actions">
+          <button data-key="3">主页</button>
+          <button data-key="24">音量 +</button>
+          <button data-key="25">音量 −</button>
+        </div>
+        <p class="hint touch-note">指针位置按 N1 的电视分辨率和手机触控面积自动换算；切换页面后会自动隐藏。</p>
+      </section>
+
+      <section class="panel" id="tab-apps">
+        <div class="section-title">
+          <h2>已安装应用</h2>
+          <button class="quiet" id="appsRefresh">刷新</button>
+        </div>
+        <p class="hint">点击图标直接启动；系统应用只能启动，用户应用可由右上角按钮卸载。</p>
+        <div id="appsGrid" class="apps-grid"></div>
+      </section>
+
+      <section class="panel" id="tab-text">
+        <div class="card">
+          <h2>发送文字到 N1</h2>
+          <p class="hint">先在 N1 上点开搜索框或输入框，再在下方输入并发送。首次使用请切换到 N1 Remote 输入法。</p>
+          <div class="button-row">
+            <button id="imeSelect">切换到 N1 输入法</button>
+            <button id="imeRestore" class="secondary">恢复原输入法</button>
+          </div>
+          <textarea id="textInput" rows="5" placeholder="输入中文、英文或粘贴内容……"></textarea>
+          <button id="textSend" class="primary wide">发送到电视</button>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-install">
+        <div class="card">
+          <h2>安装到 N1</h2>
+          <p class="hint">从手机选择一个 APK，文件会直接上传到 N1 并安装覆盖旧版本。</p>
+          <input id="apkFile" type="file" accept=".apk,application/vnd.android.package-archive">
+          <button id="installButton" class="primary wide">上传并安装</button>
+          <pre id="installLog" class="log"></pre>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-more">
+        <div class="card status-card">
+          <h2>连接状态</h2>
+          <dl>
+            <dt>地址</dt><dd id="statusAddress">—</dd>
+            <dt>ADB Shell</dt><dd id="statusRoot">—</dd>
+            <dt>当前输入法</dt><dd id="statusIme">—</dd>
+          </dl>
+          <button id="logoutButton" class="secondary wide">断开并忘记 PIN</button>
+        </div>
+        <div class="card">
+          <h2>安全提示</h2>
+          <p class="hint">此控制台通过局域网 HTTP 工作，只应在可信家庭网络使用。不要把 8088 或 ADB 5555 端口映射到公网。</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/tv_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="54dp"
+    android:paddingVertical="42dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:contentDescription="N1 Remote"
+            android:src="@drawable/ic_n1remote_legacy" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N1 Remote"
+                android:textColor="#F4EEE5"
+                android:textSize="25sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="手机控制台 · 局域网直连"
+                android:textColor="#8F969B"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/serviceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/status_pill"
+            android:gravity="center"
+            android:minWidth="120dp"
+            android:paddingHorizontal="18dp"
+            android:text="服务启动中"
+            android:textColor="#F4EEE5"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/rootStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/status_pill"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="140dp"
+            android:paddingHorizontal="18dp"
+            android:text="SuperSU 检查中"
+            android:textColor="#F4EEE5"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="30dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="22dp"
+            android:layout_weight="1"
+            android:background="@drawable/panel_dark"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:padding="34dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="手机，就是 N1 的遥控器"
+                android:textColor="#F4EEE5"
+                android:textSize="38sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="4dp"
+                android:text="遥控、应用管理、中文输入、截图和 APK 安装，都在同一个网页里完成。"
+                android:textColor="#A6ACAF"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:text="控制台地址"
+                android:textColor="#898F92"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="7dp"
+                android:textColor="#F4EEE5"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="访问 PIN"
+                android:textColor="#898F92"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/pin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:letterSpacing="0.14"
+                android:textColor="#FF995F"
+                android:textSize="35sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="28dp"
+                android:background="#343A3E" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:lineSpacingExtra="5dp"
+                android:text="1  手机扫描右侧二维码\n2  浏览器会自动填入 PIN\n3  选择“添加到主屏幕”"
+                android:textColor="#C6CBCD"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="330dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/panel_warm"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="26dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="手机扫码打开"
+                android:textColor="#24282B"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/qrCode"
+                android:layout_width="235dp"
+                android:layout_height="235dp"
+                android:layout_marginTop="18dp"
+                android:background="#FFFFFF"
+                android:contentDescription="手机控制台二维码"
+                android:padding="10dp"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:lineSpacingExtra="3dp"
+                android:text="同一 Wi-Fi 下扫码即可\n无需在手机安装额外 App"
+                android:textColor="#6D6862"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="控制服务在 N1 重启后自动运行 · 首次使用请允许 N1 Remote 获取 SuperSU 权限"
+        android:textColor="#747B7F"
+        android:textSize="11sp" />
+</LinearLayout>

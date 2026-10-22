@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">N1 Remote</string>
+    <string name="ime_name">N1 Remote 中文输入</string>
+    <string name="notification_title">N1 Remote 控制台运行中</string>
+</resources>

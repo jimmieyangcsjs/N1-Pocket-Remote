@@ -1,0 +1,16 @@
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+*.hprof
+*.log
+
+# Device captures and local experiments
+/*.png
+/*.jpg
+/*.json
+/*.xml
+/*test.js
+/mock-server.js
+

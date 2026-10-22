@@ -1,0 +1,3 @@
+-keep class com.gathin.n1remote.N1RemoteIme { *; }
+-keep class com.gathin.n1remote.BootReceiver { *; }
+-keep class com.gathin.n1remote.RemoteService { *; }

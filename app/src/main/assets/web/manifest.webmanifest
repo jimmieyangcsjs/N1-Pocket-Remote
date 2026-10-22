@@ -1,0 +1,18 @@
+{
+  "name": "N1 Remote",
+  "short_name": "N1 Remote",
+  "description": "斐讯 N1 局域网遥控与应用程序管理",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07111a",
+  "theme_color": "#07111a",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

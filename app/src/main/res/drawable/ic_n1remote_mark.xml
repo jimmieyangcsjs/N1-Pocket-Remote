@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Two soft radio arcs make the mark read as a remote, not a generic letter tile. -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M30,39 C24,45 24,63 30,69"
+        android:strokeColor="#FF995F"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.2" />
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M78,39 C84,45 84,63 78,69"
+        android:strokeColor="#FF995F"
+        android:strokeLineCap="round"
+        android:strokeWidth="3.2" />
+
+    <!-- A compact upright remote. Its silhouette survives circular and rounded-square masks. -->
+    <path
+        android:fillColor="#F2EADF"
+        android:pathData="M43,20 H65 C71.6,20 77,25.4 77,32 V76 C77,82.6 71.6,88 65,88 H43 C36.4,88 31,82.6 31,76 V32 C31,25.4 36.4,20 43,20 Z" />
+
+    <!-- Inset screen and controls use the background tone as negative space. -->
+    <path
+        android:fillColor="#202528"
+        android:pathData="M42,30 H66 C68.2,30 70,31.8 70,34 V48 C70,50.2 68.2,52 66,52 H42 C39.8,52 38,50.2 38,48 V34 C38,31.8 39.8,30 42,30 Z" />
+    <path
+        android:fillColor="#FF995F"
+        android:pathData="M54,59 m-7,0 a7,7 0,1 0,14 0 a7,7 0,1 0,-14 0" />
+    <path
+        android:fillColor="#343B3E"
+        android:pathData="M47,73 H61 C62.1,73 63,73.9 63,75 C63,76.1 62.1,77 61,77 H47 C45.9,77 45,76.1 45,75 C45,73.9 45.9,73 47,73 Z" />
+</vector>
