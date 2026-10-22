@@ -1,29 +1,29 @@
-# HTTP API
+# HTTP 接口
 
-All endpoints except login require:
+除登录接口外，所有接口都需要请求头：
 
 ```http
 X-N1-Token: <six-digit-pin>
 ```
 
-## Public
+## 无需登录
 
-- `POST /api/login` — `{"pin":"123456"}`.
+- `POST /api/login`：`{"pin":"123456"}`。
 
-## Authenticated
+## 需要认证
 
-- `GET /api/ping` — lightweight health check, no shell command.
-- `GET /api/status` — IP, port, root shell, IME and screen size.
-- `GET /api/apps` — launchable apps and PNG icons.
-- `POST /api/launch` — `{"package":"com.example.app"}`.
-- `POST /api/uninstall` — user-app only.
-- `POST /api/key` — `{"code":22,"long":false}`.
-- `POST /api/touch` — `tap`, `long` or `swipe`.
-- `POST /api/pointer` — `show`, `hide`, `move`, `click`, `long`.
-- `POST /api/text` — send text through N1RemoteIme or clipboard fallback.
-- `POST /api/ime` — `select` or `restore`.
-- `POST /api/install` — raw APK body.
-- `GET /api/screenshot` — base64 PNG.
+- `GET /api/ping`：轻量健康检查，不执行 Shell。
+- `GET /api/status`：IP、端口、root Shell、输入法和屏幕尺寸。
+- `GET /api/apps`：可启动应用及 PNG 图标。
+- `POST /api/launch`：`{"package":"com.example.app"}`。
+- `POST /api/uninstall`：仅允许卸载用户应用。
+- `POST /api/key`：`{"code":22,"long":false}`。
+- `POST /api/touch`：`tap`、`long` 或 `swipe`。
+- `POST /api/pointer`：`show`、`hide`、`move`、`click` 或 `long`。
+- `POST /api/text`：通过 N1RemoteIme 发送文字，失败时使用剪贴板。
+- `POST /api/ime`：`select` 或 `restore`。
+- `POST /api/install`：原始 APK 请求体。
+- `GET /api/screenshot`：Base64 PNG。
 
-All API responses use `{"ok":true,...}` or `{"ok":false,"error":"..."}`.
+所有 API 响应格式为 `{"ok":true,...}` 或 `{"ok":false,"error":"..."}`。
 

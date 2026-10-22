@@ -1,4 +1,4 @@
-# Architecture
+# 架构说明
 
 ```text
 Phone PWA
@@ -18,30 +18,30 @@ RemoteServer (0.0.0.0:8088)
 CleanYourTV ── signature ContentProvider ── RemoteService status
 ```
 
-## Service lifecycle
+## 服务生命周期
 
-`RemoteService` runs in the foreground and keeps `RemoteServer` listening. It registers a default network callback, watches the loopback port every 30 seconds, and restarts a server that is no longer accepting connections.
+`RemoteService` 以前台服务运行，并维持 `RemoteServer` 监听。它注册默认网络回调，每 30 秒检查一次本地回环端口；监听器失去响应时会自动替换服务实例。
 
-## Low-latency keys
+## 低延迟按键
 
-Calling Android's `input keyevent` starts a Java VM for every key. On N1 this costs close to one second. `InputDaemon` instead keeps a root-owned `cat` process open against the Amlogic keyboard event device and writes kernel `input_event` records directly. Unsupported keys fall back to `input keyevent`.
+Android 的 `input keyevent` 每次都会启动一个 Java VM，在 N1 上耗时接近 1 秒。`InputDaemon` 保持一个 root 所有的 `cat` 进程直接打开 Amlogic 键盘事件设备，并写入内核 `input_event` 记录。遇到不支持的按键时才回退到 `input keyevent`。
 
-## State exposure
+## 状态数据暴露
 
-The launcher needs the current IP, port and PIN to draw a QR code. This data is provided by `StatusProvider`, protected by:
+桌面需要当前 IP、端口和 PIN 才能生成二维码。这些数据由 `StatusProvider` 提供，并受以下权限保护：
 
 ```text
 com.gathin.n1remote.permission.READ_STATUS
 protectionLevel=signature
 ```
 
-There is no unauthenticated LAN endpoint that discloses the PIN.
+局域网中没有任何无需认证即可读取 PIN 的接口。
 
-## Boot and offline behavior
+## 开机与离线行为
 
-The server binds independently of network availability. A boot broadcast or the launcher's provider query can start the service. When network returns, the phone heartbeat and launcher network callback refresh the displayed address.
+HTTP 服务不依赖网络即可绑定。开机广播或桌面 Provider 查询都可以启动服务。网络恢复后，手机心跳和桌面网络回调会刷新当前地址。
 
-## Touch pointer
+## 触控指针
 
-The pointer is a full-screen, `FLAG_NOT_TOUCHABLE` system overlay. The phone maps its touchpad deltas to the TV's real resolution. Click and long-press commands inject absolute touch events at the drawn pointer position.
+指针是全屏、`FLAG_NOT_TOUCHABLE` 的系统悬浮层。手机将触控位移映射到电视真实分辨率；点击和长按会在指针当前位置注入绝对触控事件。
 

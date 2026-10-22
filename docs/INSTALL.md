@@ -1,45 +1,45 @@
-# Installation
+# 安装与使用
 
-## Requirements
+## 环境要求
 
-- Android TV 7.0+ device with Wi-Fi and root management
-- SuperSU or an equivalent root command
-- Device and phone on the same private LAN
-- N1 builds tested with Android 7.1 / API 25
+- 支持 Wi-Fi 和 root 管理的 Android TV 7.0+ 设备
+- SuperSU 或等效的 root 命令
+- 电视盒子和手机位于同一私有局域网
+- N1 实测版本为 Android 7.1 / API 25
 
-## Install APK
+## 安装 APK
 
 ```powershell
 adb install -r dist\N1Remote-v0.1.apk
 adb shell am start -n com.gathin.n1remote/.MainActivity
 ```
 
-Approve the SuperSU prompt once. The foreground service will remain active after the app returns to Home.
+首次打开时允许一次 SuperSU 授权。App 返回首页后，前台服务仍会继续运行。
 
-## Connect
+## 连接控制台
 
-1. Open Home. A launcher built for N1 Remote can show the status card and QR.
-2. Otherwise open N1 Remote and scan the QR.
-3. Manual address: `http://<device-ip>:8088`.
-4. Enter the six-digit PIN shown on the TV.
-5. Add the page to the phone home screen for PWA-style access.
+1. 打开电视首页；集成 N1 Remote 的桌面会直接显示状态卡和二维码。
+2. 也可以打开 N1 Remote，扫描电视上的二维码。
+3. 手动访问地址：`http://<设备IP>:8088`。
+4. 输入电视显示的 6 位 PIN。
+5. 在手机浏览器中选择“添加到主屏幕”，以 PWA 方式使用。
 
-The PIN is generated locally with `SecureRandom`; it is not a hard-coded default.
+PIN 由本机 `SecureRandom` 生成，不是硬编码默认值。
 
-## Root and overlay permission
+## Root 与悬浮层权限
 
-The service can start without network or root prompt. The virtual pointer requests `SYSTEM_ALERT_WINDOW` only when the touch page is first opened. If SuperSU is unavailable, ordinary remote keys still work but pointer overlay may not.
+服务在没有网络或尚未弹出 root 授权时也能先启动。虚拟指针只会在第一次进入触控页时申请 `SYSTEM_ALERT_WINDOW`。如果 SuperSU 不可用，普通遥控按键仍可工作，但指针层可能无法显示。
 
-## Recovery
+## 自动恢复
 
-- Boot: `BOOT_COMPLETED`
-- Package update: `MY_PACKAGE_REPLACED`
-- Network return: connectivity and Wi-Fi broadcasts
-- Service restart: `START_STICKY`
-- Dead listener: 30-second loopback watchdog
-- Boot broadcast race: launcher status provider starts the service on first query
+- 开机：`BOOT_COMPLETED`
+- 应用更新：`MY_PACKAGE_REPLACED`
+- 网络恢复：连接和 Wi-Fi 广播
+- 服务重启：`START_STICKY`
+- 监听失效：30 秒本地端口看门狗
+- 开机广播竞争：桌面第一次读取状态时由 Provider 主动启动服务
 
-## Remove
+## 卸载
 
 ```powershell
 adb uninstall com.gathin.n1remote

@@ -1,5 +1,8 @@
 # N1 Pocket Remote
 
+> [!IMPORTANT]
+> **AI 构建声明：** 本项目由 AI 协助完成代码、界面、测试和文档。虽然已在真实斐讯 N1 上完成安装与运行验证，二次开发者仍应自行进行代码审计、安全评估和设备备份。
+
 把 Android TV / 电视盒子变成可由手机直接接管的局域网控制台。项目专为斐讯 N1（Android 7.1、API 25）验证，也适用于其他已 root、带 ADB 的 Android TV 设备。
 
 > 本仓库是非官方项目。请只在可信局域网中使用，不要把控制端口或 ADB 端口暴露到公网。
@@ -83,4 +86,7 @@ APK 输出到 `app/build/outputs/apk/release/`。
 ## 许可证
 
 N1 Remote 源码使用 MIT License，见 [LICENSE](LICENSE)。第三方组件和字体的许可见 [NOTICE.md](NOTICE.md)。
+
+AI 构建与人工验证边界见 [AI-NOTICE.md](AI-NOTICE.md)。
+
 

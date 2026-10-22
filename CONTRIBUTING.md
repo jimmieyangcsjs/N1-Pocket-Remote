@@ -1,28 +1,28 @@
-# Contributing
+# 参与贡献
 
-## Before submitting
+## 提交前检查
 
-- Build with API 25 compatibility in mind.
-- Do not test input injection through an unrestricted root context. N1 firmware can throw an InputManager exception; shell context or the persistent `InputDaemon` is required.
-- Keep the HTTP server free of unauthenticated endpoints that reveal PIN, IP, app data, files or shell output.
-- Do not commit local PINs, LAN IPs, device serial numbers, APKs from private sources, or device captures containing those values.
-- Keep new mobile controls touch-friendly and keyboard-accessible.
+- 修改必须保持 API 25 兼容。
+- 不要通过普通 root 上下文测试输入注入。N1 固件可能触发 InputManager 异常，必须使用 shell 上下文或常驻的 `InputDaemon`。
+- HTTP 服务不得增加会泄露 PIN、IP、应用数据、文件或 Shell 输出的匿名接口。
+- 不要提交真实 PIN、局域网 IP、设备序列号、私有 APK，或包含上述信息的设备截图。
+- 新增手机控件必须适合触控，并保留键盘可访问性。
 
-## Development checks
+## 开发检查
 
 ```powershell
 node --check app/src/main/assets/web/app.js
 .\gradlew.bat assembleRelease
 ```
 
-Test at minimum:
+至少验证以下场景：
 
-- PIN login and URL auto-login
-- remote keys and long press
-- touchpad click, long press and movement
-- app launch and APK upload
-- service recovery after stop or reboot
-- no-network start and network restoration
+- PIN 登录与 URL 自动登录
+- 遥控按键和长按
+- 触控点击、长按和移动
+- 应用启动与 APK 上传
+- 服务停止或重启后的恢复
+- 无网络启动与网络恢复
 
-Open a pull request with the device/firmware tested and the failure modes checked.
+提交 Pull Request 时，请注明测试设备、固件版本和已验证的异常场景。
 

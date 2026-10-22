@@ -1,16 +1,16 @@
-# Third-party notices
+# 第三方组件声明
 
 ## ZXing
 
-QR generation uses ZXing Core 3.5.3, licensed under the Apache License 2.0.
+二维码生成使用 ZXing Core 3.5.3，采用 Apache License 2.0。
 
-## LXGW WenKai GB Screen
+## 霞鹜文楷 GB Screen
 
-The web UI bundles a WOFF2 subset of LXGW WenKai GB Screen.
+手机 Web 界面包含霞鹜文楷 GB Screen 的 WOFF2 子集。
 
-- Project: <https://github.com/lxgw/LxgwWenKai-Screen>
-- License: SIL Open Font License 1.1
-- Full license text: `app/src/main/assets/web/OFL-LXGW-WenKai-Screen.txt`
+- 项目地址：<https://github.com/lxgw/LxgwWenKai-Screen>
+- 许可证：SIL Open Font License 1.1
+- 完整许可证：`app/src/main/assets/web/OFL-LXGW-WenKai-Screen.txt`
 
-The subset is used only for web font delivery inside N1 Remote.
+该子集仅用于 N1 Remote 内部 Web 字体分发。
 

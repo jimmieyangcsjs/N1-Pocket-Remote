@@ -1,18 +1,18 @@
-# Optional: N1 system font
+# 可选：N1 系统字体
 
-The tested N1 build uses **LXGW WenKai GB Screen** for Simplified Chinese while keeping Noto fonts for symbols and missing glyphs.
+实测 N1 使用 **霞鹜文楷 GB Screen** 作为简体中文主字体，同时保留 Noto 符号和缺字回退字体。
 
-This is an optional device modification, not required by N1 Remote.
+这是可选的设备级修改，不是 N1 Remote 的运行前提。
 
-## Safety
+## 安全要求
 
-- Back up `/system/etc/fonts.xml`.
-- Keep the original Noto CJK, Emoji and Symbols files.
-- Add the font only to the `lang="zh-Hans"` family.
-- Validate XML and hash before rebooting.
-- Keep a recovery path over USB ADB.
+- 备份 `/system/etc/fonts.xml`。
+- 保留原始 Noto CJK、Emoji 和 Symbols 字体。
+- 只将新字体加入 `lang="zh-Hans"` 字体族，避免抢占图标和特殊符号回退。
+- 重启前校验 XML、文件权限、SELinux 标签和 SHA-256。
+- 保留 USB ADB 恢复通道。
 
-The full font is not committed because it is about 26 MB. Download `LXGWWenKaiGBScreen.ttf` from the official [LxgwWenKai-Screen releases](https://github.com/lxgw/LxgwWenKai-Screen/releases).
+完整字体约 26 MB，因此不提交到仓库。请从官方 [LxgwWenKai-Screen Releases](https://github.com/lxgw/LxgwWenKai-Screen/releases) 下载 `LXGWWenKaiGBScreen.ttf`。
 
-License: SIL OFL 1.1.
+许可证：SIL OFL 1.1。
 

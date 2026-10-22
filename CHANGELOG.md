@@ -1,12 +1,12 @@
-# Changelog
+# 变更记录
 
 ## 0.1
 
-- Initial public N1 Pocket Remote release.
-- Chinese phone PWA with QR/PIN login.
-- Remote keys, virtual pointer touch page, app management, screenshot, APK install and Chinese input.
-- Foreground service with boot/network/watcher recovery.
-- Low-latency persistent input event channel.
-- Same-signature launcher status provider.
-- LXGW WenKai GB Screen web font subset.
+- N1 Pocket Remote 首个公开版本。
+- 简体中文手机 PWA，支持二维码和 PIN 登录。
+- 遥控按键、虚拟指针触控页、应用管理、截图、APK 安装和中文输入。
+- 前台服务，支持开机、网络恢复和端口监控恢复。
+- 低延迟常驻输入事件通道。
+- 同签名桌面状态 Provider。
+- 霞鹜文楷 GB Screen Web 字体子集。
 

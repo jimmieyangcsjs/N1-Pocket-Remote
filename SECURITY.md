@@ -1,12 +1,12 @@
-# Security
+# 安全说明
 
-N1 Remote is designed for a trusted private LAN.
+N1 Remote 仅面向可信私有局域网。
 
-- Never expose port `8088` or ADB port `5555` directly to the internet.
-- Use a separate/VLAN network or Tailscale when remote access is required.
-- Treat screenshots containing the QR code or PIN as secrets.
-- The web UI uses HTTP because the legacy Android TV device does not provide a practical local HTTPS certificate. Do not assume transport encryption.
-- The launcher status provider is protected by a `signature` permission. A differently signed APK cannot read the PIN.
+- 不要将 `8088` 控制端口或 ADB `5555` 直接暴露到互联网。
+- 需要外网访问时，使用独立 VLAN、Tailscale 等私有网络。
+- 包含二维码或 PIN 的电视截图应视为敏感信息。
+- 旧版 Android TV 难以部署可信局域网 HTTPS，因此网页使用 HTTP，不要假设传输已加密。
+- 桌面状态 Provider 由 `signature` 权限保护，不同签名的 APK 无法读取 PIN。
 
-Report security issues privately to the repository owner rather than opening a public issue with active credentials.
+发现安全问题时应私下联系仓库维护者，不要在公开 Issue 中附带仍然有效的凭据。
 
