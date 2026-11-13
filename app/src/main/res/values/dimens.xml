@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="tv_pad_horizontal">48dp</dimen>
+    <dimen name="tv_pad_vertical">32dp</dimen>
+    <dimen name="tv_header_icon">52dp</dimen>
+    <dimen name="tv_main_gap">18dp</dimen>
+    <dimen name="tv_main_top">22dp</dimen>
+    <dimen name="tv_panel_padding">30dp</dimen>
+    <dimen name="tv_qr_panel_width">330dp</dimen>
+    <dimen name="tv_qr_size">226dp</dimen>
+    <dimen name="tv_qr_panel_padding">24dp</dimen>
+    <dimen name="tv_pin_panel_width">220dp</dimen>
+    <dimen name="tv_status_min_width">132dp</dimen>
+    <dimen name="tv_root_status_min_width">152dp</dimen>
+    <dimen name="tv_hero_size">34sp</dimen>
+    <dimen name="tv_app_title_size">23sp</dimen>
+    <dimen name="tv_body_size">14sp</dimen>
+    <dimen name="tv_caption_size">10sp</dimen>
+    <dimen name="tv_address_size">20sp</dimen>
+    <dimen name="tv_pin_size">34sp</dimen>
+    <dimen name="tv_status_size">11sp</dimen>
+    <dimen name="tv_feature_title_size">14sp</dimen>
+    <dimen name="tv_feature_text_size">10sp</dimen>
+    <dimen name="tv_status_height">38dp</dimen>
+    <dimen name="tv_footer_height">46dp</dimen>
+</resources>

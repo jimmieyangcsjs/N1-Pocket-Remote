@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b1012">
+  <meta name="theme-color" content="#071018">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,80 +14,118 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark"><img src="/icon.png" alt=""></div>
-      <div>
+      <div class="brand-copy">
         <strong>N1 Remote</strong>
-        <span id="deviceLine">局域网控制台</span>
+        <span id="deviceLine" aria-live="polite">局域网控制台</span>
       </div>
     </div>
-    <div id="connectionBadge" class="badge">未连接</div>
+    <div id="connectionBadge" class="badge" data-state="offline" aria-live="polite">未连接</div>
   </header>
 
   <main>
-    <section id="loginView" class="login card">
-      <div class="status-line"><span class="signal"></span> 局域网直连</div>
-      <h1>连接客厅的 N1</h1>
-      <p>输入电视上显示的 6 位 PIN，手机以后会记住这台设备。</p>
-      <label for="pin">访问 PIN</label>
-      <input id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
-      <button id="loginButton" class="primary wide">连接</button>
-      <p class="fineprint">N1 需已启动并与手机连接到同一局域网。</p>
+    <section id="loginView" class="login-view">
+      <div class="login-orbit" aria-hidden="true"></div>
+      <div class="login card">
+        <div class="status-line"><span class="signal"></span>本地加密会话 · 不经云端</div>
+        <h1>连接你的 N1</h1>
+        <p class="login-lead">输入电视上显示的 6 位访问码。连接成功后，手机会记住这台设备。</p>
+        <label for="pin">访问 PIN</label>
+        <input id="pin" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="pinHelp">
+        <button id="loginButton" class="primary wide">进入控制台</button>
+        <p id="pinHelp" class="fineprint">N1 与手机需要连接到同一局域网。</p>
+      </div>
+      <div class="login-features">
+        <span>低延迟按键</span>
+        <span>触控指针</span>
+        <span>应用管理</span>
+      </div>
     </section>
 
     <div id="appView" class="hidden">
-      <nav class="tabs" aria-label="功能">
-        <button class="tab active" data-tab="remote">遥控</button>
-        <button class="tab" data-tab="touch">触控</button>
-        <button class="tab" data-tab="apps">应用</button>
-        <button class="tab" data-tab="text">输入</button>
-        <button class="tab" data-tab="install">安装</button>
-        <button class="tab" data-tab="more">更多</button>
-      </nav>
-
       <section class="panel active" id="tab-remote">
-        <div class="remote-layout">
-          <div class="dpad-wrap">
-            <div class="dpad">
-              <button class="pad up" data-key="19" aria-label="上">▲</button>
-              <button class="pad left" data-key="21" aria-label="左">◀</button>
-              <button class="pad ok" data-key="23">OK</button>
-              <button class="pad right" data-key="22" aria-label="右">▶</button>
-              <button class="pad down" data-key="20" aria-label="下">▼</button>
-            </div>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">LIVE CONTROL</span>
+            <h1>轻松掌控 N1</h1>
+            <p>方向、确认与常用动作保持在一屏内，按键反馈即时可见。</p>
           </div>
+          <div class="live-chip"><span></span>低延迟</div>
+        </div>
+
+        <div class="remote-console">
+          <div class="dpad-wrap">
+            <div class="dpad-ring">
+              <div class="dpad">
+                <button class="pad up" data-key="19" aria-label="向上">▲</button>
+                <button class="pad left" data-key="21" aria-label="向左">◀</button>
+                <button class="pad ok" data-key="23" aria-label="确认">OK</button>
+                <button class="pad right" data-key="22" aria-label="向右">▶</button>
+                <button class="pad down" data-key="20" aria-label="向下">▼</button>
+              </div>
+            </div>
+            <div class="dpad-caption"><span>滑动焦点</span><span>OK 确认</span></div>
+          </div>
+
           <div class="remote-actions">
-            <button data-key="4">返回</button>
-            <button data-key="3">主页</button>
-            <button data-key="82">菜单</button>
-            <button data-key="24">音量 +</button>
-            <button data-key="25">音量 −</button>
-            <button data-key="164">静音</button>
+            <button class="remote-action" data-key="4">
+              <span class="action-symbol">↩</span><strong>返回</strong><small>BACK</small>
+            </button>
+            <button class="remote-action" data-key="3">
+              <span class="action-symbol">⌂</span><strong>主页</strong><small>HOME</small>
+            </button>
+            <button class="remote-action" data-key="82">
+              <span class="action-symbol">≡</span><strong>菜单</strong><small>MENU</small>
+            </button>
+            <button class="remote-action compact" data-key="24">
+              <span class="action-symbol">＋</span><strong>音量</strong><small>UP</small>
+            </button>
+            <button class="remote-action compact" data-key="25">
+              <span class="action-symbol">－</span><strong>音量</strong><small>DOWN</small>
+            </button>
+            <button class="remote-action compact" data-key="164">
+              <span class="action-symbol">○</span><strong>静音</strong><small>MUTE</small>
+            </button>
           </div>
         </div>
+
         <div class="section-title">
-          <h2>电视画面</h2>
-          <button class="quiet" id="shotButton">刷新截图</button>
+          <div>
+            <span class="eyebrow">PREVIEW</span>
+            <h2>电视画面</h2>
+          </div>
+          <div class="section-actions">
+            <button class="quiet" id="shotButton">刷新截图</button>
+          <a class="primary small" href="/mirror.html">实时镜像</a>
+          </div>
         </div>
         <div class="screen-shell">
           <img id="screenshot" alt="N1 截图">
-          <div id="screenPlaceholder">点击“刷新截图”查看当前画面</div>
+          <div id="screenPlaceholder">
+            <span class="screen-glyph">▣</span>
+            <strong>查看电视当前画面</strong>
+            <small>轻触右上角刷新截图</small>
+          </div>
         </div>
       </section>
 
       <section class="panel touch-page" id="tab-touch">
         <div class="touch-page-head">
           <div>
-            <h2>触控板</h2>
-            <p>在下方移动电视上的指针，轻触点击，按住约 0.6 秒长按。</p>
+            <span class="eyebrow">PRECISION POINTER</span>
+            <h1>触控板</h1>
+            <p>在区域内滑动控制电视指针，轻触点击，按住约 0.6 秒触发长按。</p>
           </div>
           <button class="quiet" id="touchBackToRemote">返回遥控</button>
         </div>
 
         <div class="touch-meta">
-          <span id="touchMapping">正在读取屏幕尺寸…</span>
-          <span id="touchPointerState">指针待命</span>
+          <span id="touchMapping" class="meta-pill">正在读取屏幕尺寸…</span>
+          <span id="touchPointerState" class="meta-pill state">指针待命</span>
         </div>
 
         <div class="sensitivity" role="group" aria-label="指针速度">
@@ -98,8 +136,9 @@
 
         <div id="touchpad" class="touchpad touchpad-large" role="application" aria-label="N1 鼠标触控板">
           <div class="touch-axis"></div>
+          <div class="touch-crosshair" aria-hidden="true"></div>
           <div id="touchDot" class="touch-dot"></div>
-          <div class="touch-caption">滑动移动 · 轻触点击 · 按住长按</div>
+          <div class="touch-caption"><span>滑动移动</span><i></i><span>轻触点击</span><i></i><span>按住长按</span></div>
         </div>
 
         <div class="touch-command-grid">
@@ -118,44 +157,87 @@
           <button data-key="24">音量 +</button>
           <button data-key="25">音量 −</button>
         </div>
-        <p class="hint touch-note">指针位置按 N1 的电视分辨率和手机触控面积自动换算；切换页面后会自动隐藏。</p>
+        <p class="hint touch-note">移动速度会按电视分辨率与手机触控面积换算；离开本页后指针自动隐藏。</p>
       </section>
 
       <section class="panel" id="tab-apps">
-        <div class="section-title">
-          <h2>已安装应用</h2>
+        <div class="page-heading compact-heading">
+          <div>
+            <span class="eyebrow">APP LIBRARY</span>
+            <h1>已安装应用</h1>
+            <p>轻触启动。系统应用只读，用户应用可直接卸载。</p>
+          </div>
+          <button id="openInstall" class="primary small">安装 APK</button>
+        </div>
+        <div class="apps-toolbar">
+          <input id="appsSearch" type="search" placeholder="搜索应用名称或包名" autocomplete="off" aria-label="搜索应用">
+          <span id="appCount" class="meta-pill" aria-live="polite">读取中</span>
           <button class="quiet" id="appsRefresh">刷新</button>
         </div>
-        <p class="hint">点击图标直接启动；系统应用只能启动，用户应用可由右上角按钮卸载。</p>
         <div id="appsGrid" class="apps-grid"></div>
       </section>
 
       <section class="panel" id="tab-text">
-        <div class="card">
-          <h2>发送文字到 N1</h2>
-          <p class="hint">先在 N1 上点开搜索框或输入框，再在下方输入并发送。首次使用请切换到 N1 Remote 输入法。</p>
+        <div class="page-heading compact-heading">
+          <div>
+            <span class="eyebrow">TEXT BRIDGE</span>
+            <h1>发送文字到 N1</h1>
+            <p>先在电视上选中输入框，再把内容发送过去。</p>
+          </div>
+        </div>
+        <div class="task-card card">
           <div class="button-row">
             <button id="imeSelect">切换到 N1 输入法</button>
             <button id="imeRestore" class="secondary">恢复原输入法</button>
           </div>
-          <textarea id="textInput" rows="5" placeholder="输入中文、英文或粘贴内容……"></textarea>
+          <div class="field-heading">
+            <label for="textInput">输入内容</label>
+            <span id="textCount">0 字</span>
+          </div>
+          <textarea id="textInput" rows="6" placeholder="输入中文、英文或粘贴内容……"></textarea>
           <button id="textSend" class="primary wide">发送到电视</button>
+        </div>
+        <div class="callout">
+          <strong>输入法没有响应？</strong>
+          <p>先点上面的“切换到 N1 输入法”，再回到目标应用选中输入框后发送。</p>
         </div>
       </section>
 
       <section class="panel" id="tab-install">
-        <div class="card">
-          <h2>安装到 N1</h2>
-          <p class="hint">从手机选择一个 APK，文件会直接上传到 N1 并安装覆盖旧版本。</p>
+        <div class="page-heading compact-heading">
+          <div>
+            <span class="eyebrow">SIDELOAD</span>
+            <h1>安装 APK</h1>
+            <p>文件保留在本地网络内，上传后由 N1 直接安装。</p>
+          </div>
+          <button id="installBack" class="quiet">返回应用</button>
+        </div>
+        <div class="task-card card install-card">
+          <label class="file-picker" for="apkFile">
+            <span class="file-icon">APK</span>
+            <strong id="apkFileName">选择安装包</strong>
+            <small id="apkMeta">支持 .apk，覆盖安装会保留应用数据</small>
+          </label>
           <input id="apkFile" type="file" accept=".apk,application/vnd.android.package-archive">
           <button id="installButton" class="primary wide">上传并安装</button>
+          <div id="installProgress" class="install-progress" role="progressbar" aria-label="APK 上传进度" aria-valuemin="0" aria-valuemax="100">
+            <div class="install-progress-track"><span id="installProgressValue"></span></div>
+            <small id="installProgressLabel">等待选择文件</small>
+          </div>
           <pre id="installLog" class="log"></pre>
         </div>
       </section>
 
       <section class="panel" id="tab-more">
-        <div class="card status-card">
-          <h2>连接状态</h2>
+        <div class="page-heading compact-heading">
+          <div>
+            <span class="eyebrow">SYSTEM</span>
+            <h1>连接与安全</h1>
+            <p>查看当前服务和输入法状态，必要时断开此设备。</p>
+          </div>
+        </div>
+        <div class="status-card card">
+          <div class="status-card-head"><span class="signal"></span><h2>连接状态</h2></div>
           <dl>
             <dt>地址</dt><dd id="statusAddress">—</dd>
             <dt>ADB Shell</dt><dd id="statusRoot">—</dd>
@@ -163,15 +245,44 @@
           </dl>
           <button id="logoutButton" class="secondary wide">断开并忘记 PIN</button>
         </div>
-        <div class="card">
-          <h2>安全提示</h2>
-          <p class="hint">此控制台通过局域网 HTTP 工作，只应在可信家庭网络使用。不要把 8088 或 ADB 5555 端口映射到公网。</p>
+        <div class="callout danger-callout">
+          <strong>只用于可信家庭网络</strong>
+          <p>不要把 8088 或 ADB 5555 端口映射到公网。需要外网访问时请使用 Tailscale、WireGuard 等私有网络。</p>
+        </div>
+        <div class="more-links">
+          <a href="/mirror.html"><span>实时镜像</span><small>独立页面 · H.264 低延迟触控</small></a>
+          <button data-open-tab="install"><span>安装 APK</span><small>上传新的应用到 N1</small></button>
+          <button data-tab-jump="apps"><span>应用管理</span><small>启动或卸载已安装应用</small></button>
         </div>
       </section>
+
+      <nav class="tabs" aria-label="功能">
+        <button class="tab active" data-tab="remote">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm0 4.2 2.5 2.5h-5L12 7.2Zm-4.8 4.8 2.5-2.5v5l-2.5-2.5Zm9.6 0-2.5 2.5v-5l2.5 2.5ZM12 18.3l-2.5-2.5h5L12 18.3Z"/></svg>
+          <span>遥控</span>
+        </button>
+        <button class="tab" data-tab="touch">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5v8.2l-1.2-1.1a1.8 1.8 0 0 0-2.5 2.6l4.1 4.1a5 5 0 0 0 3.6 1.5H15a5 5 0 0 0 5-5v-2.2a1.6 1.6 0 0 0-3.2 0v1-3.1a1.6 1.6 0 0 0-3.2 0V7.4a1.6 1.6 0 0 0-3.2 0v-3.9a1 1 0 0 0-2 0Z"/></svg>
+          <span>触控</span>
+        </button>
+        <button class="tab" data-tab="apps">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"/></svg>
+          <span>应用</span>
+        </button>
+        <button class="tab" data-tab="text">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4h-.5A.5.5 0 0 1 4 15.5v-9Zm3 2v2h10v-2H7Zm0 4v2h7v-2H7Z"/></svg>
+          <span>输入</span>
+        </button>
+        <button class="tab" data-tab="more">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+          <span>更多</span>
+        </button>
+      </nav>
     </div>
   </main>
 
-  <div id="toast" class="toast"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/client-core.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

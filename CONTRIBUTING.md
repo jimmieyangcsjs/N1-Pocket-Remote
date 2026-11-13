@@ -12,7 +12,10 @@
 
 ```powershell
 node --check app/src/main/assets/web/app.js
-.\gradlew.bat assembleRelease
+node --check app/src/main/assets/web/client-core.js
+node --check app/src/main/assets/web/mirror.js
+node --test tests/web-assets.test.js tests/client-core.test.js tests/android-tv-layout.test.js
+.\gradlew.bat test assembleRelease
 ```
 
 至少验证以下场景：
@@ -23,6 +26,9 @@ node --check app/src/main/assets/web/app.js
 - 应用启动与 APK 上传
 - 服务停止或重启后的恢复
 - 无网络启动与网络恢复
+- 手机镜像页在竖屏、横屏、全屏和屏幕旋转后的布局
+- 手机横屏左侧 TV 画面、右侧标题/控制键/会话按钮互不重叠
+- 用户可见文案统一使用“镜像”，不再出现旧文案“镜面”
 
 提交 Pull Request 时，请注明测试设备、固件版本和已验证的异常场景。
 

@@ -1,206 +1,529 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.gathin.n1remote.TvBackdropLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/tv_background"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingHorizontal="54dp"
-    android:paddingVertical="42dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="54dp"
-            android:layout_height="54dp"
-            android:contentDescription="N1 Remote"
-            android:src="@drawable/ic_n1remote_legacy" />
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/tv_pad_horizontal"
+        android:paddingTop="@dimen/tv_pad_vertical"
+        android:paddingEnd="@dimen/tv_pad_horizontal"
+        android:paddingBottom="@dimen/tv_pad_vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="N1 Remote"
-                android:textColor="#F4EEE5"
-                android:textSize="25sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="手机控制台 · 局域网直连"
-                android:textColor="#8F969B"
-                android:textSize="12sp" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/serviceStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:background="@drawable/status_pill"
-            android:gravity="center"
-            android:minWidth="120dp"
-            android:paddingHorizontal="18dp"
-            android:text="服务启动中"
-            android:textColor="#F4EEE5"
-            android:textSize="13sp" />
-
-        <TextView
-            android:id="@+id/rootStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/status_pill"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:minWidth="140dp"
-            android:paddingHorizontal="18dp"
-            android:text="SuperSU 检查中"
-            android:textColor="#F4EEE5"
-            android:textSize="13sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="30dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="22dp"
-            android:layout_weight="1"
-            android:background="@drawable/panel_dark"
             android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:padding="34dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="手机，就是 N1 的遥控器"
-                android:textColor="#F4EEE5"
-                android:textSize="38sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:lineSpacingExtra="4dp"
-                android:text="遥控、应用管理、中文输入、截图和 APK 安装，都在同一个网页里完成。"
-                android:textColor="#A6ACAF"
-                android:textSize="16sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:text="控制台地址"
-                android:textColor="#898F92"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/address"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
-                android:textColor="#F4EEE5"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="访问 PIN"
-                android:textColor="#898F92"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/pin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:letterSpacing="0.14"
-                android:textColor="#FF995F"
-                android:textSize="35sp"
-                android:textStyle="bold" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="28dp"
-                android:background="#343A3E" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:lineSpacingExtra="5dp"
-                android:text="1  手机扫描右侧二维码\n2  浏览器会自动填入 PIN\n3  选择“添加到主屏幕”"
-                android:textColor="#C6CBCD"
-                android:textSize="15sp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="330dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/panel_warm"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="26dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="手机扫码打开"
-                android:textColor="#24282B"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+            android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/qrCode"
-                android:layout_width="235dp"
-                android:layout_height="235dp"
-                android:layout_marginTop="18dp"
-                android:background="#FFFFFF"
-                android:contentDescription="手机控制台二维码"
-                android:padding="10dp"
-                android:scaleType="fitCenter" />
+                android:layout_width="@dimen/tv_header_icon"
+                android:layout_height="@dimen/tv_header_icon"
+                android:background="@drawable/brand_tile"
+                android:contentDescription="N1 Remote"
+                android:padding="9dp"
+                android:src="@drawable/ic_n1remote_legacy" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.07"
+                    android:text="N1 REMOTE"
+                    android:textColor="#F0FAFC"
+                    android:textSize="@dimen/tv_app_title_size"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:letterSpacing="0.06"
+                    android:text="PRIVATE CONTROL · LOCAL NETWORK"
+                    android:textColor="#688791"
+                    android:textSize="@dimen/tv_caption_size" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tv_status_height"
+                android:background="@drawable/status_pill"
+                android:gravity="center_vertical"
+                android:minWidth="@dimen/tv_status_min_width"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <View
+                    android:id="@+id/serviceDot"
+                    android:layout_width="7dp"
+                    android:layout_height="7dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/status_dot" />
+
+                <TextView
+                    android:id="@+id/serviceStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="服务启动中"
+                    android:textColor="#D7E7EA"
+                    android:textSize="@dimen/tv_status_size" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/rootPill"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/tv_status_height"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/status_pill_focus"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:minWidth="@dimen/tv_root_status_min_width"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <View
+                    android:id="@+id/rootDot"
+                    android:layout_width="7dp"
+                    android:layout_height="7dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/status_dot" />
+
+                <TextView
+                    android:id="@+id/rootStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="正在检查 SuperSU"
+                    android:textColor="#D7E7EA"
+                    android:textSize="@dimen/tv_status_size" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/tv_main_top"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/tv_main_gap"
+                android:layout_weight="1"
+                android:background="@drawable/panel_main"
+                android:elevation="5dp"
+                android:orientation="vertical"
+                android:padding="@dimen/tv_panel_padding">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.13"
+                    android:text="●  LOCAL COMMAND CONSOLE"
+                    android:textColor="#62DDE2"
+                    android:textSize="@dimen/tv_caption_size"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:fontFamily="sans-serif-light"
+                    android:includeFontPadding="false"
+                    android:text="手机，就是 N1 的遥控中心"
+                    android:textColor="#F2FAFC"
+                    android:textSize="@dimen/tv_hero_size"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:lineSpacingExtra="3dp"
+                    android:text="遥控、实时镜像、应用管理、中文输入和 APK 安装，都在一个安全入口完成。"
+                    android:textColor="#91A9B1"
+                    android:textSize="@dimen/tv_body_size" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="12dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/info_tile"
+                        android:orientation="vertical"
+                        android:paddingStart="18dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="18dp"
+                        android:paddingBottom="15dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.08"
+                            android:text="CONTROL ENDPOINT"
+                            android:textColor="#698892"
+                            android:textSize="@dimen/tv_caption_size" />
+
+                        <TextView
+                            android:id="@+id/address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="7dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="#E9F8FA"
+                            android:textSize="@dimen/tv_address_size"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="@dimen/tv_pin_panel_width"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/info_tile_accent"
+                        android:orientation="vertical"
+                        android:paddingStart="18dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="18dp"
+                        android:paddingBottom="15dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.08"
+                            android:text="ACCESS PIN"
+                            android:textColor="#B98669"
+                            android:textSize="@dimen/tv_caption_size" />
+
+                        <TextView
+                            android:id="@+id/pin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:letterSpacing="0.13"
+                            android:textColor="#FFB16E"
+                            android:textSize="@dimen/tv_pin_size"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="24dp"
+                    android:background="#203A5660" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:background="@drawable/step_badge"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:text="1"
+                        android:textColor="#8DF1F2"
+                        android:textSize="@dimen/tv_caption_size"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="9dp"
+                        android:layout_weight="1"
+                        android:text="扫描右侧二维码"
+                        android:textColor="#C5D8DD"
+                        android:textSize="@dimen/tv_body_size" />
+
+                    <TextView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_marginStart="18dp"
+                        android:background="@drawable/step_badge"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:text="2"
+                        android:textColor="#8DF1F2"
+                        android:textSize="@dimen/tv_caption_size"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="9dp"
+                        android:layout_weight="1"
+                        android:text="浏览器自动登录"
+                        android:textColor="#C5D8DD"
+                        android:textSize="@dimen/tv_body_size" />
+
+                    <TextView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:layout_marginStart="18dp"
+                        android:background="@drawable/step_badge"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:text="3"
+                        android:textColor="#8DF1F2"
+                        android:textSize="@dimen/tv_caption_size"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="9dp"
+                        android:layout_weight="1"
+                        android:text="添加到主屏幕"
+                        android:textColor="#C5D8DD"
+                        android:textSize="@dimen/tv_body_size" />
+                </LinearLayout>
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="CAPABILITIES"
+                    android:textColor="#4F707A"
+                    android:textSize="@dimen/tv_caption_size" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="实时镜像"
+                            android:textColor="#CFE9ED"
+                            android:textSize="@dimen/tv_feature_title_size"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="手机直接触摸控制"
+                            android:textColor="#68868F"
+                            android:textSize="@dimen/tv_feature_text_size" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="#243D5962" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="应用中心"
+                            android:textColor="#CFE9ED"
+                            android:textSize="@dimen/tv_feature_title_size"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="启动、安装与卸载"
+                            android:textColor="#68868F"
+                            android:textSize="@dimen/tv_feature_text_size" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="#243D5962" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="中文输入"
+                            android:textColor="#CFE9ED"
+                            android:textSize="@dimen/tv_feature_title_size"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:text="手机键盘无缝输入"
+                            android:textColor="#68868F"
+                            android:textSize="@dimen/tv_feature_text_size" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="@dimen/tv_qr_panel_width"
+                android:layout_height="match_parent"
+                android:background="@drawable/panel_qr"
+                android:elevation="8dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="@dimen/tv_qr_panel_padding">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.13"
+                    android:text="SCAN TO CONNECT"
+                    android:textColor="#63DDE3"
+                    android:textSize="@dimen/tv_caption_size"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:text="手机扫码打开"
+                    android:textColor="#F2FAFC"
+                    android:textSize="@dimen/tv_app_title_size"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="@dimen/tv_qr_size"
+                    android:layout_height="@dimen/tv_qr_size"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/qr_tile"
+                    android:padding="11dp">
+
+                    <ImageView
+                        android:id="@+id/qrCode"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="手机控制台二维码"
+                        android:scaleType="fitCenter" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp"
+                    android:text="同一局域网 · 自动填入 PIN"
+                    android:textColor="#A4BBC2"
+                    android:textSize="@dimen/tv_body_size" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:text="无需安装额外 App"
+                    android:textColor="#5F7E87"
+                    android:textSize="@dimen/tv_caption_size" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="18dp"
+                    android:background="#244DD0D7" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center"
+                    android:letterSpacing="0.08"
+                    android:text="REALTIME MIRROR READY"
+                    android:textColor="#6197A3"
+                    android:textSize="@dimen/tv_caption_size" />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:letterSpacing="0.08"
+                    android:text="PIN PROTECTED · SINGLE VIEWER"
+                    android:textColor="#4E747E"
+                    android:textSize="@dimen/tv_caption_size" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tv_footer_height"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/status_pill"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:lineSpacingExtra="3dp"
-                android:text="同一 Wi-Fi 下扫码即可\n无需在手机安装额外 App"
-                android:textColor="#6D6862"
-                android:textSize="13sp" />
+                android:layout_weight="1"
+                android:letterSpacing="0.05"
+                android:text="●  SERVICE · MIRROR · APPS · TEXT · SCREENSHOT"
+                android:textColor="#78959E"
+                android:textSize="@dimen/tv_caption_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.1"
+                android:text="N1 · ANDROID TV"
+                android:textColor="#506B74"
+                android:textSize="@dimen/tv_caption_size" />
         </LinearLayout>
     </LinearLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:text="控制服务在 N1 重启后自动运行 · 首次使用请允许 N1 Remote 获取 SuperSU 权限"
-        android:textColor="#747B7F"
-        android:textSize="11sp" />
-</LinearLayout>
+</com.gathin.n1remote.TvBackdropLayout>

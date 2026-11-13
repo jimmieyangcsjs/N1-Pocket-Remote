@@ -1,21 +1,55 @@
-const $ = (id) => document.getElementById(id);
+"use strict";
+
+const $ = id => document.getElementById(id);
+const core = window.N1RemoteCore;
+const PAGE_TITLES = {
+  remote: "遥控",
+  touch: "触控板",
+  apps: "应用",
+  install: "安装 APK",
+  text: "文字输入",
+  more: "连接与安全"
+};
+const VALID_TABS = new Set(Object.keys(PAGE_TITLES));
+const requestedTab = new URLSearchParams(location.search).get("tab") || location.hash.slice(1);
 const state = {
   token: localStorage.getItem("n1remotePin") || "",
-  busy: false,
+  connected: false,
   pointerActive: false,
   screenWidth: 1920,
   screenHeight: 1080,
-  sensitivity: Number(localStorage.getItem("n1remoteSensitivity")) || 1
+  sensitivity: Number(localStorage.getItem("n1remoteSensitivity")) || 1,
+  apps: [],
+  appsLoaded: false,
+  appsLoading: false,
+  search: ""
 };
-const requestedTab = new URLSearchParams(location.search).get("tab") || location.hash.slice(1);
 let toastTimer;
+let heartbeatTimer;
+let lastErrorText = "";
+let lastErrorAt = 0;
 
 function toast(message) {
   const el = $("toast");
   el.textContent = message;
   el.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+function reportError(error, silent = false) {
+  if (error && error.status === 401) {
+    forgetSession("访问 PIN 已失效，请重新连接");
+    return;
+  }
+  if (error && error.offline) markOffline();
+  if (silent) return;
+  const message = error && error.message ? error.message : "操作失败";
+  const now = Date.now();
+  if (message === lastErrorText && now - lastErrorAt < 2200) return;
+  lastErrorText = message;
+  lastErrorAt = now;
+  toast(message);
 }
 
 async function request(path, options = {}, withAuth = true, timeoutMs = 8000) {
@@ -26,15 +60,27 @@ async function request(path, options = {}, withAuth = true, timeoutMs = 8000) {
   let response;
   try {
     response = await fetch(path, { ...options, headers, signal: controller.signal });
-  } catch (error) {
-    if (error.name === "AbortError") throw new Error("请求超时，请检查 N1 是否在线");
+  } catch (cause) {
+    const error = new Error(cause.name === "AbortError"
+      ? "请求超时，请检查 N1 是否在线"
+      : "无法连接 N1，请确认手机与盒子在同一网络");
+    error.offline = true;
     throw error;
   } finally {
     clearTimeout(timer);
   }
+
   let data;
-  try { data = await response.json(); } catch (_) { data = { ok: false, error: `HTTP ${response.status}` }; }
-  if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
+  try {
+    data = await response.json();
+  } catch (_) {
+    data = { ok: false, error: `N1 返回了无效响应（HTTP ${response.status}）` };
+  }
+  if (!response.ok || data.ok === false) {
+    const error = new Error(data.error || `请求失败（HTTP ${response.status}）`);
+    error.status = response.status;
+    throw error;
+  }
   return data;
 }
 
@@ -46,18 +92,61 @@ function postJson(path, body, timeoutMs = 8000) {
   }, true, timeoutMs);
 }
 
-function setConnected(connected) {
+function setBadge(kind, text) {
   const badge = $("connectionBadge");
-  badge.textContent = connected ? "已连接" : "未连接";
-  badge.classList.toggle("online", connected);
-  $("loginView").classList.toggle("hidden", connected);
-  $("appView").classList.toggle("hidden", !connected);
-  if (!connected) hidePointer();
+  badge.textContent = text;
+  badge.dataset.state = kind;
+  badge.classList.toggle("online", kind === "online");
+  document.body.dataset.connection = kind;
+}
+
+function revealShell() {
+  $("loginView").classList.add("hidden");
+  $("appView").classList.remove("hidden");
+}
+
+function showLogin() {
+  $("appView").classList.add("hidden");
+  $("loginView").classList.remove("hidden");
+  hidePointer();
+}
+
+function markOnline() {
+  state.connected = true;
+  setBadge("online", "已连接");
+  if (state.token) revealShell();
+}
+
+function markOffline() {
+  state.connected = false;
+  setBadge("offline", state.token ? "连接中断" : "未连接");
+  if (state.token) revealShell();
+  else showLogin();
+}
+
+function forgetSession(message) {
+  hidePointer();
+  clearTimeout(heartbeatTimer);
+  heartbeatTimer = null;
+  state.token = "";
+  state.connected = false;
+  state.apps = [];
+  state.appsLoaded = false;
+  localStorage.removeItem("n1remotePin");
+  setBadge("offline", "未连接");
+  showLogin();
+  if (message) toast(message);
 }
 
 async function login() {
   const pin = $("pin").value.trim();
-  if (!/^\d{6}$/.test(pin)) return toast("请输入 6 位 PIN");
+  if (!/^\d{6}$/.test(pin)) {
+    toast("请输入电视上显示的 6 位 PIN");
+    return;
+  }
+  const button = $("loginButton");
+  button.disabled = true;
+  button.textContent = "正在连接…";
   try {
     await request("/api/login", {
       method: "POST",
@@ -65,181 +154,346 @@ async function login() {
       body: JSON.stringify({ pin })
     }, false);
     state.token = pin;
+    state.apps = [];
+    state.appsLoaded = false;
     localStorage.setItem("n1remotePin", pin);
-    setConnected(true);
-    await refreshStatus();
-    await loadApps();
+    markOnline();
+    await Promise.all([refreshStatus(), loadApps({ silent: true })]);
     activateRequestedTab();
+    scheduleHeartbeat(core.nextRetryDelay(true));
     toast("已连接 N1");
   } catch (error) {
-    toast(error.message);
+    reportError(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = "进入控制台";
   }
 }
 
 async function restoreSession() {
-  if (!state.token) return setConnected(false);
+  if (!state.token) {
+    showLogin();
+    return;
+  }
+  revealShell();
+  setBadge("checking", "正在连接");
   try {
     await refreshStatus();
-    setConnected(true);
-    await loadApps();
+    markOnline();
+    await loadApps({ silent: true });
     activateRequestedTab();
-  } catch (_) {
-    state.token = "";
-    localStorage.removeItem("n1remotePin");
-    setConnected(false);
+  } catch (error) {
+    if (error.status === 401) {
+      forgetSession("已保存的 PIN 已失效，请重新扫码");
+      return;
+    }
+    markOffline();
+    reportError(error);
+    activateRequestedTab();
+  } finally {
+    if (state.token) scheduleHeartbeat(core.nextRetryDelay(state.connected));
   }
 }
 
 function activateRequestedTab() {
-  if (["remote", "touch", "apps", "text", "install", "more"].includes(requestedTab)) {
-    activateTab(requestedTab);
+  if (VALID_TABS.has(requestedTab)) activateTab(requestedTab);
+  else activateTab("remote");
+}
+
+function activateTab(name) {
+  if (!VALID_TABS.has(name)) return;
+  const previous = document.querySelector(".panel.active")?.id.replace("tab-", "");
+  const navName = name === "install" ? "apps" : name;
+  document.querySelectorAll(".tab").forEach(tab =>
+    tab.classList.toggle("active", tab.dataset.tab === navName));
+  document.querySelectorAll(".panel").forEach(panel =>
+    panel.classList.toggle("active", panel.id === `tab-${name}`));
+  document.title = `${PAGE_TITLES[name]} · N1 Remote`;
+
+  if (previous === "touch" && name !== "touch") hidePointer();
+  if (name === "touch") showPointer();
+  if (name === "apps") {
+    if (!state.appsLoaded && !state.appsLoading) loadApps();
+    else renderApps();
   }
+  if (name === "more") refreshStatus().catch(error => reportError(error));
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function refreshStatus() {
   const data = await request("/api/status");
   $("deviceLine").textContent = `${data.ip}:${data.port}`;
   $("statusAddress").textContent = `${data.ip}:${data.port}`;
-  $("statusRoot").textContent = data.adb ? "已连接" : "不可用";
+  $("statusRoot").textContent = data.adb ? "正常" : "不可用";
   $("statusIme").textContent = data.ime && data.ime !== "null" ? data.ime : "未知";
   state.screenWidth = Number(data.screenWidth) || state.screenWidth;
   state.screenHeight = Number(data.screenHeight) || state.screenHeight;
   updateTouchMapping();
+  return data;
 }
 
-async function sendKey(code, longPress = false) {
-  if (state.busy) return;
-  state.busy = true;
-  try { await postJson("/api/key", { code, long: longPress }); }
-  catch (error) { toast(error.message); }
-  finally { state.busy = false; }
-}
-
-function activateTab(name) {
-  const leavingTouch = document.querySelector(".tab.active")?.dataset.tab === "touch";
-  document.querySelectorAll(".tab").forEach(tab => tab.classList.toggle("active", tab.dataset.tab === name));
-  document.querySelectorAll(".panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
-  if (name === "apps" && !$("appsGrid").children.length) loadApps();
-  if (name === "more") refreshStatus().catch(error => toast(error.message));
-  if (name === "touch") {
-    updateTouchMapping();
-    showPointer();
-  } else if (leavingTouch) {
-    hidePointer();
-  }
-}
-
-async function loadApps() {
+async function loadApps({ silent = false } = {}) {
+  if (state.appsLoading) return;
+  state.appsLoading = true;
   const grid = $("appsGrid");
-  grid.innerHTML = '<div class="hint">正在读取应用列表……</div>';
+  const refresh = $("appsRefresh");
+  refresh.disabled = true;
+  if (!silent && !state.appsLoaded) {
+    grid.innerHTML = '<div class="empty-state loading-state"><span></span>正在读取 N1 应用…</div>';
+    $("appCount").textContent = "读取中";
+  }
   try {
     const data = await request("/api/apps");
-    grid.innerHTML = "";
-    for (const app of data.apps) {
-      const tile = document.createElement("div");
-      tile.className = "app-tile";
-      tile.title = app.package;
-      const icon = document.createElement("img");
-      icon.alt = "";
-      icon.src = app.icon || "";
-      const name = document.createElement("div");
-      name.className = "app-name";
-      name.textContent = app.label || app.package;
-      tile.append(icon, name);
-      tile.addEventListener("click", async () => {
-        try {
-          await postJson("/api/launch", { package: app.package });
-          toast(`已启动 ${app.label}`);
-        } catch (error) { toast(error.message); }
-      });
-      if (!app.system) {
-        const remove = document.createElement("button");
-        remove.className = "app-uninstall";
-        remove.textContent = "×";
-        remove.title = "卸载";
-        remove.addEventListener("click", async event => {
-          event.stopPropagation();
-          if (!confirm(`从 N1 卸载“${app.label}”？应用数据也会被删除。`)) return;
-          try {
-            await postJson("/api/uninstall", { package: app.package });
-            toast("已卸载");
-            loadApps();
-          } catch (error) { toast(error.message); }
-        });
-        tile.append(remove);
-      }
-      grid.append(tile);
-    }
-    if (!data.apps.length) grid.innerHTML = '<p class="hint">没有发现可启动应用。</p>';
+    state.apps = Array.isArray(data.apps) ? data.apps : [];
+    state.appsLoaded = true;
+    renderApps();
   } catch (error) {
-    grid.innerHTML = "";
-    toast(error.message);
+    reportError(error, silent);
+    if (!state.appsLoaded) {
+      grid.innerHTML = '<div class="empty-state">暂时无法读取应用列表，请检查连接后重试。</div>';
+      $("appCount").textContent = "离线";
+    }
+  } finally {
+    state.appsLoading = false;
+    refresh.disabled = false;
   }
+}
+
+function renderApps() {
+  const grid = $("appsGrid");
+  const apps = core.filterApps(state.apps, state.search);
+  grid.textContent = "";
+  $("appCount").textContent = state.search
+    ? `${apps.length} / ${state.apps.length}`
+    : `${state.apps.length} 个`;
+
+  if (!apps.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = state.search ? "没有匹配的应用" : "没有发现可启动应用";
+    grid.append(empty);
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  for (const app of apps) {
+    const label = app.label || app.package;
+    const tile = document.createElement("div");
+    tile.className = "app-tile";
+    tile.title = app.package;
+    tile.tabIndex = 0;
+    tile.setAttribute("role", "button");
+    tile.setAttribute("aria-label", `启动 ${label}`);
+
+    const icon = document.createElement("img");
+    icon.alt = "";
+    icon.loading = "lazy";
+    icon.decoding = "async";
+    icon.src = app.icon || "/icon.png";
+    icon.addEventListener("error", () => {
+      icon.src = "/icon.png";
+    }, { once: true });
+
+    const name = document.createElement("div");
+    name.className = "app-name";
+    name.textContent = label;
+
+    const meta = document.createElement("div");
+    meta.className = "app-meta";
+    meta.textContent = app.system ? "系统应用" : "用户应用";
+
+    const launch = async () => {
+      if (tile.classList.contains("launching")) return;
+      tile.classList.add("launching");
+      try {
+        await postJson("/api/launch", { package: app.package });
+        toast(`已启动 ${label}`);
+      } catch (error) {
+        reportError(error);
+      } finally {
+        tile.classList.remove("launching");
+      }
+    };
+    tile.addEventListener("click", launch);
+    tile.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      launch();
+    });
+
+    if (!app.system) {
+      const remove = document.createElement("button");
+      remove.className = "app-uninstall";
+      remove.type = "button";
+      remove.textContent = "×";
+      remove.title = `卸载 ${label}`;
+      remove.setAttribute("aria-label", `卸载 ${label}`);
+      remove.addEventListener("click", async event => {
+        event.stopPropagation();
+        if (!confirm(`从 N1 卸载“${label}”？应用数据也会被删除。`)) return;
+        remove.disabled = true;
+        try {
+          await postJson("/api/uninstall", { package: app.package });
+          toast(`已卸载 ${label}`);
+          await loadApps();
+        } catch (error) {
+          reportError(error);
+          remove.disabled = false;
+        }
+      });
+      tile.append(remove);
+    }
+    tile.append(icon, name, meta);
+    fragment.append(tile);
+  }
+  grid.append(fragment);
 }
 
 async function takeScreenshot() {
   const button = $("shotButton");
+  const shell = document.querySelector(".screen-shell");
   button.disabled = true;
   button.textContent = "正在获取…";
+  shell.classList.add("loading");
   try {
-    const data = await request("/api/screenshot");
+    const data = await request("/api/screenshot", {}, true, 15_000);
     $("screenshot").src = data.image;
     $("screenshot").style.display = "block";
     $("screenPlaceholder").style.display = "none";
   } catch (error) {
-    toast(error.message);
+    reportError(error);
   } finally {
     button.disabled = false;
     button.textContent = "刷新截图";
+    shell.classList.remove("loading");
   }
+}
+
+function formatBytes(bytes) {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function setInstallProgress(percent) {
+  const value = Math.max(0, Math.min(100, Math.round(percent)));
+  $("installProgress").setAttribute("aria-valuenow", String(value));
+  $("installProgressValue").style.width = `${value}%`;
+  $("installProgressLabel").textContent = value < 100 ? `上传中 ${value}%` : "正在由 N1 安装…";
+}
+
+function uploadApk(file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/install");
+    xhr.timeout = 180_000;
+    xhr.setRequestHeader("Content-Type", "application/vnd.android.package-archive");
+    xhr.setRequestHeader("X-N1-Token", state.token);
+    xhr.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
+    xhr.upload.onprogress = event => {
+      if (event.lengthComputable) setInstallProgress((event.loaded / event.total) * 100);
+    };
+    xhr.onload = () => {
+      let data;
+      try {
+        data = JSON.parse(xhr.responseText || "{}");
+      } catch (_) {
+        data = { ok: false, error: `安装响应无效（HTTP ${xhr.status}）` };
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && data.ok !== false) resolve(data);
+      else {
+        const error = new Error(data.error || `安装失败（HTTP ${xhr.status}）`);
+        error.status = xhr.status;
+        reject(error);
+      }
+    };
+    xhr.onerror = () => {
+      const error = new Error("上传中断，请检查 N1 网络连接");
+      error.offline = true;
+      reject(error);
+    };
+    xhr.ontimeout = () => reject(new Error("上传超时，请重试"));
+    xhr.send(file);
+  });
 }
 
 async function installApk() {
   const file = $("apkFile").files[0];
-  if (!file) return toast("请先选择 APK");
+  if (!file) {
+    toast("请先选择 APK");
+    return;
+  }
+  if (!file.name.toLowerCase().endsWith(".apk")) {
+    toast("请选择 .apk 安装包");
+    return;
+  }
   const button = $("installButton");
+  const log = $("installLog");
   button.disabled = true;
-  button.textContent = "正在上传并安装…";
-  $("installLog").textContent = `${file.name}\n大小：${(file.size / 1024 / 1024).toFixed(1)} MB`;
+  button.textContent = "正在上传…";
+  $("installProgress").classList.add("visible");
+  setInstallProgress(0);
+  log.textContent = `${file.name}\n大小：${formatBytes(file.size)}`;
+  let installed = false;
   try {
-    const result = await request("/api/install", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/vnd.android.package-archive",
-        "X-File-Name": encodeURIComponent(file.name)
-      },
-      body: file
-    });
-    $("installLog").textContent += "\n安装成功";
-    toast(result.ok ? "安装成功" : "安装结束");
-    loadApps();
+    await uploadApk(file);
+    installed = true;
+    setInstallProgress(100);
+    log.textContent += "\n安装成功，应用列表已刷新";
+    toast("APK 安装成功");
+    await loadApps({ silent: true });
   } catch (error) {
-    $("installLog").textContent += `\n失败：${error.message}`;
-    toast(error.message);
+    setInstallProgress(0);
+    log.textContent += `\n失败：${error.message}`;
+    reportError(error);
   } finally {
     button.disabled = false;
     button.textContent = "上传并安装";
+    $("installProgressLabel").textContent = installed ? "安装完成" : "安装未完成";
   }
+}
+
+function updateTextCount() {
+  $("textCount").textContent = `${core.countText($("textInput").value)} 字`;
 }
 
 async function sendText() {
   const text = $("textInput").value;
-  if (!text) return toast("请输入文字");
+  if (!text.trim()) {
+    toast("请输入要发送的文字");
+    return;
+  }
+  const button = $("textSend");
+  button.disabled = true;
+  button.textContent = "正在发送…";
   try {
     const result = await postJson("/api/text", { text });
-    toast(result.mode === "ime" ? "已通过 N1 输入法发送" : "已复制并发送粘贴");
-  } catch (error) { toast(error.message); }
+    toast(result.mode === "ime" ? "已通过 N1 输入法发送" : "已复制到电视并发送粘贴");
+  } catch (error) {
+    reportError(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = "发送到电视";
+  }
 }
 
-async function imeAction(action) {
+async function imeAction(action, button) {
+  const oldText = button.textContent;
+  button.disabled = true;
+  button.textContent = action === "select" ? "正在切换…" : "正在恢复…";
   try {
     await postJson("/api/ime", { action });
     toast(action === "select" ? "已切换到 N1 输入法" : "已恢复原输入法");
-    refreshStatus().catch(() => {});
-  } catch (error) { toast(error.message); }
+    refreshStatus().catch(error => reportError(error, true));
+  } catch (error) {
+    reportError(error);
+  } finally {
+    button.disabled = false;
+    button.textContent = oldText;
+  }
 }
 
-// One visual/haptic feedback path for every phone-side button, including dynamically bound keys.
+// One visual/haptic path for all static and dynamically created phone buttons.
 document.addEventListener("pointerdown", event => {
   const button = event.target.closest?.("button");
   if (!button || button.disabled) return;
@@ -258,9 +512,18 @@ document.addEventListener("pointerup", releaseButtonFeedback, { passive: true })
 document.addEventListener("pointercancel", releaseButtonFeedback, { passive: true });
 document.addEventListener("click", event => {
   const button = event.target.closest?.("button");
-  if (!button) return;
-  button.classList.remove("is-pressed");
+  if (button) button.classList.remove("is-pressed");
 }, { passive: true });
+
+const keyQueue = core.createSerialQueue(
+  command => postJson("/api/key", command),
+  error => reportError(error)
+);
+
+function sendKey(code, longPress = false) {
+  if (!Number.isInteger(code) || code < 0) return;
+  keyQueue.enqueue({ code, long: Boolean(longPress) });
+}
 
 const touchpad = $("touchpad");
 const touchDot = $("touchDot");
@@ -270,9 +533,8 @@ let pointerMoveTimer = null;
 let pendingMove = { dx: 0, dy: 0 };
 
 function updateTouchMapping() {
-  const mapping = $("touchMapping");
-  if (!mapping) return;
-  mapping.textContent = `手机 ${Math.round(innerWidth)} × ${Math.round(innerHeight)}  →  N1 ${state.screenWidth} × ${state.screenHeight}`;
+  $("touchMapping").textContent =
+    `手机 ${Math.round(innerWidth)} × ${Math.round(innerHeight)}  →  N1 ${state.screenWidth} × ${state.screenHeight}`;
 }
 
 function applyPointerState(data) {
@@ -291,7 +553,7 @@ async function showPointer() {
   } catch (error) {
     state.pointerActive = false;
     $("touchPointerState").textContent = "指针不可用";
-    toast(error.message);
+    reportError(error);
   }
 }
 
@@ -311,7 +573,7 @@ async function pointerCommand(longPress) {
     applyPointerState(data);
     $("touchPointerState").textContent = longPress ? "已长按" : "已点击";
   } catch (error) {
-    toast(error.message);
+    reportError(error);
   }
 }
 
@@ -351,7 +613,6 @@ function bindTouchCommand(button, action) {
   button.addEventListener("pointerup", finish);
   button.addEventListener("pointercancel", cancel);
   button.addEventListener("contextmenu", event => event.preventDefault());
-  // Keyboard/accessibility activation has detail 0 and no preceding pointer sequence.
   button.addEventListener("click", event => {
     if (event.detail === 0) action(false);
   });
@@ -381,7 +642,7 @@ async function flushPointerMove() {
   } catch (error) {
     state.pointerActive = false;
     $("touchPointerState").textContent = "指针不可用";
-    toast(error.message);
+    reportError(error);
   } finally {
     pointerMoveBusy = false;
     if (Math.abs(pendingMove.dx) + Math.abs(pendingMove.dy) >= 0.0005) {
@@ -411,7 +672,6 @@ touchpad.addEventListener("pointerdown", event => {
   const point = touchPoint(event);
   touchGesture = {
     start: point,
-    end: point,
     last: point,
     time: performance.now(),
     hold: false,
@@ -434,7 +694,6 @@ touchpad.addEventListener("pointerdown", event => {
 touchpad.addEventListener("pointermove", event => {
   if (!touchGesture) return;
   const point = touchPoint(event);
-  touchGesture.end = point;
   positionTouchDot(point);
   const dxPx = point.px - touchGesture.last.px;
   const dyPx = point.py - touchGesture.last.py;
@@ -445,7 +704,6 @@ touchpad.addEventListener("pointermove", event => {
   }
   if (touchGesture.moved && (Math.abs(dxPx) > 0.2 || Math.abs(dyPx) > 0.2)) {
     const box = touchpad.getBoundingClientRect();
-    // Normalise each axis independently, then let the TV side multiply by its real pixel size.
     queuePointerMove(
       (dxPx / Math.max(1, box.width)) * state.sensitivity,
       (dyPx / Math.max(1, box.height)) * state.sensitivity
@@ -470,8 +728,9 @@ async function finishTouch(event) {
       $("touchPointerState").textContent = gesture.hold ? "已长按" : "已点击";
     }
   } catch (error) {
-    toast(error.message);
+    reportError(error);
   }
+  event.preventDefault();
 }
 
 touchpad.addEventListener("pointerup", finishTouch);
@@ -482,63 +741,123 @@ touchpad.addEventListener("pointercancel", () => {
 });
 touchpad.addEventListener("contextmenu", event => event.preventDefault());
 
+function selectSensitivity(value) {
+  state.sensitivity = Number(value);
+  localStorage.setItem("n1remoteSensitivity", String(state.sensitivity));
+  document.querySelectorAll("[data-sensitivity]").forEach(button =>
+    button.classList.toggle("active", Number(button.dataset.sensitivity) === state.sensitivity));
+}
+
 $("loginButton").addEventListener("click", login);
-$("pin").addEventListener("keydown", event => { if (event.key === "Enter") login(); });
+$("pin").addEventListener("keydown", event => {
+  if (event.key === "Enter") login();
+});
 document.querySelectorAll("[data-key]").forEach(button =>
   button.addEventListener("click", () => sendKey(Number(button.dataset.key))));
 document.querySelectorAll(".tab").forEach(tab =>
   tab.addEventListener("click", () => activateTab(tab.dataset.tab)));
+document.querySelectorAll("[data-open-tab]").forEach(button =>
+  button.addEventListener("click", () => activateTab(button.dataset.openTab)));
+document.querySelectorAll("[data-tab-jump]").forEach(button =>
+  button.addEventListener("click", () => activateTab(button.dataset.tabJump)));
 document.querySelectorAll("[data-sensitivity]").forEach(button =>
-  button.addEventListener("click", () => {
-    state.sensitivity = Number(button.dataset.sensitivity);
-    localStorage.setItem("n1remoteSensitivity", String(state.sensitivity));
-    document.querySelectorAll("[data-sensitivity]").forEach(item =>
-      item.classList.toggle("active", item === button));
-  }));
+  button.addEventListener("click", () => selectSensitivity(button.dataset.sensitivity)));
 document.querySelectorAll("[data-touch-action]").forEach(button =>
   bindTouchCommand(button, longPress => pointerCommand(longPress)));
 document.querySelectorAll("[data-touch-key]").forEach(button =>
   bindTouchCommand(button, longPress => sendKey(Number(button.dataset.touchKey), longPress)));
 $("touchBackToRemote").addEventListener("click", () => activateTab("remote"));
-$("appsRefresh").addEventListener("click", loadApps);
-$("shotButton").addEventListener("click", takeScreenshot);
-$("installButton").addEventListener("click", installApk);
-$("textSend").addEventListener("click", sendText);
-$("imeSelect").addEventListener("click", () => imeAction("select"));
-$("imeRestore").addEventListener("click", () => imeAction("restore"));
-$("logoutButton").addEventListener("click", () => {
-  hidePointer();
-  state.token = "";
-  localStorage.removeItem("n1remotePin");
-  setConnected(false);
+$("appsRefresh").addEventListener("click", () => loadApps());
+$("appsSearch").addEventListener("input", event => {
+  state.search = event.target.value;
+  renderApps();
 });
+$("openInstall").addEventListener("click", () => activateTab("install"));
+$("installBack").addEventListener("click", () => activateTab("apps"));
+$("shotButton").addEventListener("click", takeScreenshot);
+$("apkFile").addEventListener("change", event => {
+  const file = event.target.files[0];
+  $("apkFileName").textContent = file ? file.name : "选择安装包";
+  $("apkMeta").textContent = file
+    ? `${formatBytes(file.size)} · 点击更换文件`
+    : "支持 .apk，覆盖安装会保留应用数据";
+});
+$("installButton").addEventListener("click", installApk);
+$("textInput").addEventListener("input", updateTextCount);
+$("textSend").addEventListener("click", sendText);
+$("imeSelect").addEventListener("click", event => imeAction("select", event.currentTarget));
+$("imeRestore").addEventListener("click", event => imeAction("restore", event.currentTarget));
+$("logoutButton").addEventListener("click", () => {
+  if (!confirm("断开手机并忘记当前 PIN？N1 上的服务不会被卸载。")) return;
+  hidePointer();
+  forgetSession("已断开并忘记 PIN");
+});
+
+function scheduleHeartbeat(delay) {
+  clearTimeout(heartbeatTimer);
+  heartbeatTimer = setTimeout(checkHeartbeat, delay);
+}
+
+async function checkHeartbeat() {
+  heartbeatTimer = null;
+  if (!state.token) return;
+  if (document.hidden) {
+    scheduleHeartbeat(15_000);
+    return;
+  }
+  try {
+    await request("/api/ping", {}, true, 4000);
+    const recovered = !state.connected;
+    markOnline();
+    if (recovered) {
+      toast("已重新连接 N1");
+      refreshStatus().catch(error => reportError(error, true));
+      if (state.appsLoaded) loadApps({ silent: true });
+    }
+    scheduleHeartbeat(core.nextRetryDelay(true));
+  } catch (error) {
+    if (error.status === 401) {
+      forgetSession("访问 PIN 已失效，请重新扫码");
+      return;
+    }
+    markOffline();
+    scheduleHeartbeat(core.nextRetryDelay(false));
+  }
+}
+
+addEventListener("online", () => {
+  if (state.token) scheduleHeartbeat(300);
+});
+addEventListener("offline", () => {
+  if (state.token) {
+    markOffline();
+    scheduleHeartbeat(core.nextRetryDelay(false));
+  }
+});
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && state.token) scheduleHeartbeat(150);
+});
+addEventListener("resize", updateTouchMapping);
 
 const queryPin = new URLSearchParams(location.search).get("pin");
 if (/^\d{6}$/.test(queryPin || "")) {
   state.token = queryPin;
   localStorage.setItem("n1remotePin", queryPin);
-  history.replaceState(null, "", "/");
+  history.replaceState(null, "", location.pathname + (requestedTab ? `?tab=${encodeURIComponent(requestedTab)}` : ""));
 }
-restoreSession();
-const savedSensitivity = document.querySelector(`[data-sensitivity="${state.sensitivity}"]`)
-  || document.querySelector('[data-sensitivity="1"]');
-if (savedSensitivity) savedSensitivity.click();
-addEventListener("resize", updateTouchMapping);
-setInterval(async () => {
-  if (!state.token || document.hidden) return;
-  try {
-    await request("/api/ping", {}, true, 3500);
-    const badge = $("connectionBadge");
-    badge.textContent = "已连接";
-    badge.classList.add("online");
-  } catch (_) {
-    const badge = $("connectionBadge");
-    badge.textContent = "连接中断";
-    badge.classList.remove("online");
-  }
-}, 15_000);
+
+selectSensitivity(
+  document.querySelector(`[data-sensitivity="${state.sensitivity}"]`) ? state.sensitivity : 1
+);
+updateTextCount();
+updateTouchMapping();
+if (requestedTab === "mirror") location.replace("/mirror.html");
+else restoreSession();
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(() => {
-    // LAN HTTP is not a secure origin in every browser; the page still works without offline caching.
-  });
+  navigator.serviceWorker.register("/sw.js")
+    .then(registration => registration.update())
+    .catch(() => {
+      // LAN HTTP is not a secure origin in every browser; the console still works without PWA caching.
+    });
 }

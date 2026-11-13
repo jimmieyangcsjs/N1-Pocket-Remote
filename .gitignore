@@ -5,6 +5,7 @@ local.properties
 *.iml
 *.hprof
 *.log
+*.idsig
 
 # Device captures and local experiments
 /*.png
@@ -13,4 +14,7 @@ local.properties
 /*.xml
 /*test.js
 /mock-server.js
+/.edge-test/
+/n1remote-current.apk
+/.diagnostics/
 

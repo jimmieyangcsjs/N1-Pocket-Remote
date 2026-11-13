@@ -58,6 +58,7 @@ final class RemoteServer {
     private final Context context;
     private final SharedPreferences prefs;
     private final int port;
+    private final ScrcpyMirror scrcpy;
     private final ExecutorService workers = Executors.newCachedThreadPool();
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Map<String, byte[]> assetCache = new HashMap<>();
@@ -72,6 +73,7 @@ final class RemoteServer {
         this.context = context;
         this.prefs = prefs;
         this.port = port;
+        this.scrcpy = new ScrcpyMirror(context);
     }
 
     static String ensurePin(SharedPreferences prefs) {
@@ -112,6 +114,7 @@ final class RemoteServer {
 
     void stop() {
         running = false;
+        scrcpy.stop();
         try {
             if (socket != null) socket.close();
         } catch (IOException ignored) {
@@ -211,7 +214,37 @@ final class RemoteServer {
             int[] screen = screenSize();
             status.put("screenWidth", screen[0]);
             status.put("screenHeight", screen[1]);
+            status.put("mirror", scrcpy.isRunning());
+            status.put("mirrorBusy", scrcpy.isVideoClaimed());
+            status.put("scrcpy", ScrcpyMirror.SERVER_VERSION);
             sendJson(out, 200, status);
+        } else if ("/api/mirror/start".equals(path) && "POST".equals(method)) {
+            int[] screen = screenSize();
+            scrcpy.start(screen[0], screen[1]);
+            JSONObject result = ok();
+            result.put("codec", scrcpy.codec());
+            result.put("width", scrcpy.width());
+            result.put("height", scrcpy.height());
+            result.put("server", ScrcpyMirror.SERVER_VERSION);
+            sendJson(out, 200, result);
+        } else if ("/api/mirror/video".equals(path) && "GET".equals(method)) {
+            streamMirrorVideo(out);
+        } else if ("/api/mirror/touch".equals(path) && "POST".equals(method)) {
+            JSONObject touch = object(body);
+            String actionName = touch.optString("action", "");
+            int action;
+            if ("down".equals(actionName)) action = 0;
+            else if ("up".equals(actionName)) action = 1;
+            else if ("move".equals(actionName)) action = 2;
+            else if ("cancel".equals(actionName)) action = 3;
+            else throw new IllegalArgumentException("镜像触控动作无效");
+            scrcpy.injectTouch(action,
+                    (float) touch.optDouble("x", 0),
+                    (float) touch.optDouble("y", 0));
+            sendJson(out, 200, ok());
+        } else if ("/api/mirror/stop".equals(path) && "POST".equals(method)) {
+            scrcpy.stop();
+            sendJson(out, 200, ok());
         } else if ("/api/pointer".equals(path) && "POST".equals(method)) {
             JSONObject command = object(body);
             PointerOverlay pointer = RemoteService.pointer();
@@ -457,13 +490,94 @@ final class RemoteServer {
         if (result.code != 0) throw new IllegalStateException(result.output);
     }
 
+    /**
+     * Proxies scrcpy frame packets as an HTTP/1.1 chunked stream. Packet boundaries are kept so the
+     * browser can reconstruct the 12-byte scrcpy header without re-buffering the entire stream.
+     */
+    private void streamMirrorVideo(OutputStream raw) throws Exception {
+        if (!scrcpy.isRunning()) {
+            throw new IllegalStateException("实时镜像尚未启动");
+        }
+        scrcpy.claimVideo();
+        boolean headersSent = false;
+        byte[] first = null;
+        try {
+            ScrcpyMirror.Packet firstPacket = scrcpy.readVideoPacket();
+            String codec = ScrcpyMirror.h264CodecString(firstPacket);
+            ByteArrayOutputStream packet = new ByteArrayOutputStream(12 + firstPacket.data.length);
+            writeLong(packet, firstPacket.flags);
+            writeInt(packet, firstPacket.data.length);
+            packet.write(firstPacket.data);
+            first = packet.toByteArray();
+
+            String headers = "HTTP/1.1 200 OK\r\n"
+                    + "Content-Type: application/octet-stream\r\n"
+                    + "Transfer-Encoding: chunked\r\n"
+                    + "Cache-Control: no-store, no-transform\r\n"
+                    + "X-Content-Type-Options: nosniff\r\n"
+                    + "X-N1-Codec: " + codec + "\r\n"
+                    + "X-N1-Width: " + scrcpy.width() + "\r\n"
+                    + "X-N1-Height: " + scrcpy.height() + "\r\n"
+                    + "X-N1-Scrcpy: " + ScrcpyMirror.SERVER_VERSION + "\r\n"
+                    + "Connection: close\r\n\r\n";
+            BufferedOutputStream out = new BufferedOutputStream(raw, 32 * 1024);
+            out.write(headers.getBytes(StandardCharsets.US_ASCII));
+            headersSent = true;
+            writeHttpChunk(out, first);
+
+            while (running && !Thread.currentThread().isInterrupted()) {
+                ScrcpyMirror.Packet next = scrcpy.readVideoPacket();
+                packet.reset();
+                writeLong(packet, next.flags);
+                writeInt(packet, next.data.length);
+                packet.write(next.data);
+                writeHttpChunk(out, packet.toByteArray());
+            }
+            out.write("0\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+            out.flush();
+        } catch (Exception error) {
+            if (!headersSent) throw error;
+        } finally {
+            scrcpy.releaseVideo();
+            // The raw scrcpy socket has no independent viewer listener here. Closing the owning
+            // HTTP stream must also release the encoder instead of leaving it blocked on a full pipe.
+            scrcpy.stop();
+        }
+    }
+
+    private static void writeHttpChunk(OutputStream out, byte[] data) throws IOException {
+        out.write(Integer.toHexString(data.length).getBytes(StandardCharsets.US_ASCII));
+        out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
+        out.write(data);
+        out.write("\r\n".getBytes(StandardCharsets.US_ASCII));
+        out.flush();
+    }
+
+    private static void writeLong(ByteArrayOutputStream out, long value) {
+        out.write((int) (value >>> 56) & 0xFF);
+        out.write((int) (value >>> 48) & 0xFF);
+        out.write((int) (value >>> 40) & 0xFF);
+        out.write((int) (value >>> 32) & 0xFF);
+        out.write((int) (value >>> 24) & 0xFF);
+        out.write((int) (value >>> 16) & 0xFF);
+        out.write((int) (value >>> 8) & 0xFF);
+        out.write((int) value & 0xFF);
+    }
+
+    private static void writeInt(ByteArrayOutputStream out, int value) {
+        out.write((value >>> 24) & 0xFF);
+        out.write((value >>> 16) & 0xFF);
+        out.write((value >>> 8) & 0xFF);
+        out.write(value & 0xFF);
+    }
+
     private void serveAsset(String method, String path, OutputStream out) throws IOException {
         if (!"GET".equals(method) && !"HEAD".equals(method)) {
             sendText(out, 405, "text/plain", "Method not allowed".getBytes(StandardCharsets.UTF_8));
             return;
         }
         String file = path.equals("/") ? "index.html" : path.substring(1);
-        if (!file.matches("index\\.html|app\\.js|styles\\.css|manifest\\.webmanifest|sw\\.js|icon\\.png|lxgw-wenkai-screen-subset\\.woff2|OFL-LXGW-WenKai-Screen\\.txt")) {
+        if (!file.matches("index\\.html|mirror\\.html|client-core\\.js|app\\.js|mirror\\.js|styles\\.css|mirror\\.css|manifest\\.webmanifest|sw\\.js|icon\\.png|lxgw-wenkai-screen-subset\\.woff2|OFL-LXGW-WenKai-Screen\\.txt|tinyh264/(client|TinyH264|TinyH264Decoder|worker)\\.js|tinyh264/LICENSE\\.txt")) {
             sendText(out, 404, "text/plain", "Not found".getBytes(StandardCharsets.UTF_8));
             return;
         }

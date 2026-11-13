@@ -6,6 +6,7 @@ N1 Remote 仅面向可信私有局域网。
 - 需要外网访问时，使用独立 VLAN、Tailscale 等私有网络。
 - 包含二维码或 PIN 的电视截图应视为敏感信息。
 - 旧版 Android TV 难以部署可信局域网 HTTPS，因此网页使用 HTTP，不要假设传输已加密。
+- HTTP 实时镜像使用本地 WebAssembly 软件解码；不要把 `8088` 或独立镜像页面反向代理到公网。
 - 桌面状态 Provider 由 `signature` 权限保护，不同签名的 APK 无法读取 PIN。
 
 发现安全问题时应私下联系仓库维护者，不要在公开 Issue 中附带仍然有效的凭据。

@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#061019">
+  <meta name="color-scheme" content="dark">
+  <title>实时镜像 · N1 Remote</title>
+  <link rel="icon" href="/icon.png">
+  <link rel="apple-touch-icon" href="/icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="preload" href="/lxgw-wenkai-screen-subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/mirror.css">
+</head>
+<body>
+  <div id="mirrorApp" class="mirror-app">
+    <header class="mirror-bar">
+      <a class="back" href="/" aria-label="返回 N1 遥控">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.8 5-7 7 7 7 1.5-1.5-5.5-5.5L16.3 6.5 14.8 5Z"/></svg>
+        <span>遥控</span>
+      </a>
+      <div class="title">
+        <strong>实时镜像</strong>
+        <small>SCRCPY · H.264</small>
+      </div>
+      <div id="linkState" class="link-state" data-state="working">
+        <i></i><span>正在连接</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section id="viewport" class="viewport" role="application" tabindex="0" aria-label="可触控的 N1 电视实时画面">
+        <canvas id="screen" width="1920" height="1080"></canvas>
+        <div id="placeholder" class="placeholder">
+          <span class="orb"></span>
+          <strong id="placeholderTitle">正在启动硬件镜像</strong>
+          <small id="placeholderText">首次连接需要数秒准备编码器</small>
+          <button id="retry" class="retry" hidden>重新连接</button>
+        </div>
+        <span id="ripple" class="ripple" aria-hidden="true"></span>
+        <div class="stream-badge">
+          <span id="resolution">等待画面</span>
+          <span id="latency">—</span>
+        </div>
+      </section>
+      <div id="controlCluster" class="control-cluster">
+        <div class="aux-controls aux-left">
+          <button id="backKey" class="control key-control" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 5 4 10.2l5.2 5.2 1.4-1.4-2.8-2.8H15a4.5 4.5 0 0 1 0 9h-3v2h3a6.5 6.5 0 0 0 0-13H7.8l2.8-2.8L9.2 5Z"/></svg>
+            <span>返回</span>
+          </button>
+          <button id="homeKey" class="control key-control" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 6.4V21h-6v-6H10v6H4V9.4L12 3Z"/></svg>
+            <span>主页</span>
+          </button>
+        </div>
+        <nav id="navPad" class="nav-pad" aria-label="方向控制">
+          <button id="upKey" class="dpad-key dpad-up" type="button" aria-label="向上">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 5 7 7h-4v7h-6v-7H5l7-7Z"/></svg>
+          </button>
+          <button id="leftKey" class="dpad-key dpad-left" type="button" aria-label="向左">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7v4h7v6h-7v4l-7-7Z"/></svg>
+          </button>
+          <button id="centerKey" class="dpad-key dpad-center" type="button" aria-label="确定">
+            <span>确定</span>
+          </button>
+          <button id="rightKey" class="dpad-key dpad-right" type="button" aria-label="向右">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m19 12-7 7v-4H5V9h7V5l7 7Z"/></svg>
+          </button>
+          <button id="downKey" class="dpad-key dpad-down" type="button" aria-label="向下">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7h4V5h6v7h4l-7 7Z"/></svg>
+          </button>
+        </nav>
+        <div class="aux-controls aux-right">
+          <button id="menuKey" class="control key-control" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v2H4V6Zm0 5h16v2H4v-2Zm0 5h16v2H4v-2Z"/></svg>
+            <span>菜单</span>
+          </button>
+          <button id="fullscreen" class="control" type="button" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM4 15h2v3h3v2H4v-5Zm14 0h2v5h-5v-2h3v-3Z"/></svg>
+            <span>全屏</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="control-deck">
+      <div class="session-controls">
+        <button id="reconnect">重新连接</button>
+        <button id="exitMirror">退出镜像</button>
+      </div>
+      <p class="hint">在画面上直接点按、长按或滑动。镜像只走 8088 鉴权通道，不向手机开放 ADB 5555。</p>
+    </footer>
+  </div>
+
+  <section id="authGate" class="auth-gate" hidden>
+    <div>
+      <span class="eyebrow">SESSION REQUIRED</span>
+      <h1>先连接 N1</h1>
+      <p>实时镜像沿用遥控页的 PIN 会话。返回连接后再进入此页即可。</p>
+      <a href="/" class="auth-button">返回遥控首页</a>
+    </div>
+  </section>
+
+  <script src="/client-core.js"></script>
+  <script src="/mirror.js"></script>
+</body>
+</html>

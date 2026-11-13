@@ -17,9 +17,18 @@ final class Shell {
     private Shell() { }
 
     static Result run(String command) {
+        return execute(new String[]{"su", "--context", "u:r:shell:s0", "-c", command});
+    }
+
+    /** Root context is used only for staging files into /data/local/tmp. */
+    static Result runRoot(String command) {
+        return execute(new String[]{"su", "-c", command});
+    }
+
+    private static Result execute(String[] command) {
         Process process = null;
         try {
-            process = new ProcessBuilder("su", "--context", "u:r:shell:s0", "-c", command)
+            process = new ProcessBuilder(command)
                     .redirectErrorStream(true)
                     .start();
             ByteArrayOutputStream out = new ByteArrayOutputStream();

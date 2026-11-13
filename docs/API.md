@@ -14,6 +14,10 @@ X-N1-Token: <six-digit-pin>
 
 - `GET /api/ping`：轻量健康检查，不执行 Shell。
 - `GET /api/status`：IP、端口、root Shell、输入法和屏幕尺寸。
+- `POST /api/mirror/start`：启动 scrcpy 5.0.1 编码器和控制通道。
+- `GET /api/mirror/video`：持续输出带 12 字节包头的 H.264 视频流。
+- `POST /api/mirror/touch`：`{"action":"down|move|up|cancel","x":0.5,"y":0.5}`，坐标范围 0–1。
+- `POST /api/mirror/stop`：停止视频流、释放触摸并关闭 scrcpy。
 - `GET /api/apps`：可启动应用及 PNG 图标。
 - `POST /api/launch`：`{"package":"com.example.app"}`。
 - `POST /api/uninstall`：仅允许卸载用户应用。
@@ -26,4 +30,6 @@ X-N1-Token: <six-digit-pin>
 - `GET /api/screenshot`：Base64 PNG。
 
 所有 API 响应格式为 `{"ok":true,...}` 或 `{"ok":false,"error":"..."}`。
+
+`/api/mirror/video` 是 HTTP chunked 流，响应头包含 `X-N1-Codec`、`X-N1-Width`、`X-N1-Height` 和 `X-N1-Scrcpy`。视频流同一时间只允许一个查看器。
 
